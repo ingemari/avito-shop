@@ -35,7 +35,6 @@ func main() {
 	protected.GET("/inventory", inventoryHandler.Inventory)
 	protected.POST("/transaction", authHandler.Transaction)
 	protected.POST("/purchase", purchaseHandler.Purchase)
-	// protected.POST("/inventory", inventoryHandler.Inventory)
 
 	log.Println("Server is running on port 8080")
 	r.Run(":8080")
