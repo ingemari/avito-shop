@@ -20,18 +20,22 @@ func main() {
 
 	userRepo := repositories.NewUserRepository(db)
 	authHandler := handlers.NewAuthHandler(userRepo)
+	inventoryRepo := repositories.NewInventoryRepository(db)
+	purchaseHandler := handlers.NewPurchaseHandler(userRepo, inventoryRepo)
+	inventoryHandler := handlers.NewInventoryHandler(inventoryRepo)
 
 	r := gin.Default()
 
 	// Без аутентификации
 	r.POST("/api/auth", authHandler.Login)
-	r.POST("/api/register", authHandler.Register)
 
 	// Все защищенные маршруты
 	protected := r.Group("/api")
 	protected.Use(middleware.JWTAuthMiddleware()) // JWT-мидлвар
-
-	protected.POST("/transaction", authHandler.Transaction) // Теперь требует JWT
+	protected.GET("/inventory", inventoryHandler.Inventory)
+	protected.POST("/transaction", authHandler.Transaction)
+	protected.POST("/purchase", purchaseHandler.Purchase)
+	// protected.POST("/inventory", inventoryHandler.Inventory)
 
 	log.Println("Server is running on port 8080")
 	r.Run(":8080")
