@@ -2,23 +2,19 @@ package handlers
 
 import (
 	"avito-shop/internal/middleware"
-	"avito-shop/internal/models"
-	"avito-shop/internal/repositories"
 	"avito-shop/internal/services"
 	"log"
-
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthHandler struct {
-	userRepo *repositories.UserRepository
+	service *services.AuthService
 }
 
-func NewAuthHandler(userRepo *repositories.UserRepository) *AuthHandler {
-	return &AuthHandler{userRepo: userRepo}
+func NewAuthHandler(service *services.AuthService) *AuthHandler {
+	return &AuthHandler{service: service}
 }
 
 func (h *AuthHandler) Login(c *gin.Context) {
@@ -33,36 +29,13 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	// Проверяем, существует ли пользователь
-	user, err := h.userRepo.GetUserByUsername(req.Username)
+	user, err := h.service.Login(req.Username, req.Password)
 	if err != nil {
-		log.Println("User not found, creating new:", req.Username)
-
-		// Создаем нового пользователя
-		hashedPassword := services.HashPassword(req.Password)
-		newUser := models.User{
-			Username: req.Username,
-			Password: hashedPassword,
-			Balance:  1000, // Стартовый баланс
-		}
-
-		if err := h.userRepo.CreateUser(&newUser); err != nil {
-			log.Println("Failed to create user:", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
-			return
-		}
-
-		user = &newUser
-	} else {
-		// Если пользователь найден, проверяем пароль
-		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
-			log.Println("Password mismatch for user:", req.Username)
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
-			return
-		}
+		log.Println("Login failed:", err)
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
 	}
 
-	// Генерация JWT-токена
 	token, err := middleware.GenerateJWT(user.ID)
 	if err != nil {
 		log.Println("JWT generation failed:", err)

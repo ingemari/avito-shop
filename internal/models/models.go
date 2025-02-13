@@ -20,3 +20,9 @@ type Inventory struct {
 	ItemType string
 	Quantity int
 }
+
+type Item struct {
+	ID    uint `gorm:"primaryKey"`
+	Name  string
+	Price int
+}

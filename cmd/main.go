@@ -4,6 +4,7 @@ import (
 	"avito-shop/internal/handlers"
 	"avito-shop/internal/middleware"
 	"avito-shop/internal/repositories"
+	"avito-shop/internal/services"
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -18,23 +19,37 @@ func main() {
 		log.Fatal("Failed to connect to database")
 	}
 
+	// Initialize repositories
 	userRepo := repositories.NewUserRepository(db)
-	authHandler := handlers.NewAuthHandler(userRepo)
+	transactionRepo := repositories.NewTransactionRepository(db)
+	itemsRepo := repositories.NewItemsRepository(db)
 	inventoryRepo := repositories.NewInventoryRepository(db)
-	purchaseHandler := handlers.NewPurchaseHandler(userRepo, inventoryRepo)
-	inventoryHandler := handlers.NewInventoryHandler(inventoryRepo)
+
+	// Initialize services
+	authService := services.NewAuthService(userRepo)
+	transactionService := services.NewTransactionService(userRepo, transactionRepo)
+	purchaseService := services.NewPurchaseService(userRepo, itemsRepo, inventoryRepo)
+
+	// Initialize handlers
+	authHandler := handlers.NewAuthHandler(authService)
+	transactionHandler := handlers.NewTransactionHandler(transactionService)
+	purchaseHandler := handlers.NewPurchaseHandler(purchaseService)
+
+	if purchaseHandler == nil {
+		log.Fatal("purchaseHandler is not initialized")
+	}
 
 	r := gin.Default()
 
-	// Без аутентификации
+	// Public routes
 	r.POST("/api/auth", authHandler.Login)
 
-	// Все защищенные маршруты
+	// Protected routes with JWT middleware
 	protected := r.Group("/api")
-	protected.Use(middleware.JWTAuthMiddleware()) // JWT-мидлвар
-	protected.GET("/inventory", inventoryHandler.Inventory)
-	protected.POST("/transaction", authHandler.Transaction)
-	protected.POST("/purchase", purchaseHandler.Purchase)
+	protected.Use(middleware.JWTAuthMiddleware())
+	protected.POST("/transaction", transactionHandler.SendCoins)
+	protected.POST("/buy", purchaseHandler.Buy)
+	// protected.GET("/inventory", purchaseHandler.Purchase)
 
 	log.Println("Server is running on port 8080")
 	r.Run(":8080")
