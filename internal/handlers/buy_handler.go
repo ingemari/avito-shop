@@ -22,7 +22,6 @@ func (h *PurchaseHandler) Buy(c *gin.Context) {
 		return
 	}
 
-	// Получаем item из параметра пути
 	item := c.Param("item")
 	if item == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Item is required"})

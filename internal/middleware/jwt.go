@@ -38,7 +38,6 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// Ожидаем формат "Bearer <token>"
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token format"})
@@ -47,7 +46,7 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 		}
 
 		tokenString := parts[1]
-		claims := &Claims{} // Теперь правильно используем кастомные claims
+		claims := &Claims{}
 
 		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 			return secretKey, nil
@@ -61,7 +60,7 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 
 		log.Printf("Authenticated user ID: %d", claims.UserID)
 
-		// Сохраняем userID в контексте Gin
+		// Сохраняем userID в context Gin
 		c.Set("userID", claims.UserID)
 		c.Next()
 	}
