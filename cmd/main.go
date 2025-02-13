@@ -34,10 +34,7 @@ func main() {
 	authHandler := handlers.NewAuthHandler(authService)
 	transactionHandler := handlers.NewTransactionHandler(transactionService)
 	purchaseHandler := handlers.NewPurchaseHandler(purchaseService)
-
-	if purchaseHandler == nil {
-		log.Fatal("purchaseHandler is not initialized")
-	}
+	infoHandler := handlers.NewInfoHandler(inventoryRepo, transactionRepo, userRepo)
 
 	r := gin.Default()
 
@@ -47,9 +44,9 @@ func main() {
 	// Protected routes with JWT middleware
 	protected := r.Group("/api")
 	protected.Use(middleware.JWTAuthMiddleware())
-	protected.POST("/transaction", transactionHandler.SendCoins)
-	protected.POST("/buy", purchaseHandler.Buy)
-	// protected.GET("/inventory", purchaseHandler.Purchase)
+	protected.POST("/sendCoin", transactionHandler.SendCoins)
+	protected.POST("/buy/:item", purchaseHandler.Buy)
+	protected.GET("/info", infoHandler.Info)
 
 	log.Println("Server is running on port 8080")
 	r.Run(":8080")

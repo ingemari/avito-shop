@@ -22,20 +22,21 @@ func (h *PurchaseHandler) Buy(c *gin.Context) {
 		return
 	}
 
-	var req struct {
-		Item string `json:"item" binding:"required"`
-	}
-
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+	// Получаем item из параметра пути
+	item := c.Param("item")
+	if item == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Item is required"})
 		return
 	}
 
-	newBalance, err := h.service.PurchaseItem(userID.(uint), req.Item)
+	newBalance, err := h.service.PurchaseItem(userID.(uint), item)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Purchase successful", "new_balance": newBalance})
+	c.JSON(http.StatusOK, gin.H{
+		"message":     "Purchase successful",
+		"new_balance": newBalance,
+	})
 }

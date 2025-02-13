@@ -17,3 +17,9 @@ func NewTransactionRepository(db *gorm.DB) *TransactionRepository {
 func (r *TransactionRepository) CreateTransaction(transaction *models.Transaction) error {
 	return r.db.Create(transaction).Error
 }
+
+func (r *TransactionRepository) GetUserTransactions(userID uint) ([]models.Transaction, error) {
+	var transactions []models.Transaction
+	err := r.db.Where("from_user = ? OR to_user = ?", userID, userID).Find(&transactions).Error
+	return transactions, err
+}

@@ -24,7 +24,7 @@ func (h *TransactionHandler) SendCoins(c *gin.Context) {
 	}
 
 	var req struct {
-		To     string `json:"to" binding:"required"`
+		ToUser string `json:"toUser" binding:"required"`
 		Amount int    `json:"amount" binding:"gt=0"`
 	}
 
@@ -33,7 +33,7 @@ func (h *TransactionHandler) SendCoins(c *gin.Context) {
 		return
 	}
 
-	err := h.service.TransferCoins(userID.(uint), req.To, req.Amount)
+	err := h.service.TransferCoins(userID.(uint), req.ToUser, req.Amount)
 	if err != nil {
 		if errors.Is(err, errors.New("insufficient funds")) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Insufficient funds"})

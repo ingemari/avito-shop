@@ -39,3 +39,11 @@ func (r *UserRepository) UpdateUser(user *models.User) error {
 	result := r.db.Save(user)
 	return result.Error
 }
+
+func (r *UserRepository) GetUserBalance(userID uint) (float64, error) {
+	var balance float64
+	if err := r.db.Model(&models.User{}).Where("id = ?", userID).Pluck("balance", &balance).Error; err != nil {
+		return 0, err
+	}
+	return balance, nil
+}
