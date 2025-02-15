@@ -5,17 +5,21 @@ import (
 	"errors"
 )
 
-type PurchaseService struct {
-	userRepo  *repositories.UserRepository
-	itemsRepo *repositories.ItemsRepository
-	invRepo   *repositories.InventoryRepository
+type PurchaseService interface {
+	PurchaseItem(userID uint, itemName string) (int, error)
 }
 
-func NewPurchaseService(userRepo *repositories.UserRepository, itemsRepo *repositories.ItemsRepository, invRepo *repositories.InventoryRepository) *PurchaseService {
-	return &PurchaseService{userRepo: userRepo, itemsRepo: itemsRepo, invRepo: invRepo}
+type purchaseService struct {
+	userRepo  repositories.UserRepository
+	itemsRepo repositories.ItemsRepository
+	invRepo   repositories.InventoryRepository
 }
 
-func (s *PurchaseService) PurchaseItem(userID uint, itemName string) (int, error) {
+func NewPurchaseService(userRepo repositories.UserRepository, itemsRepo repositories.ItemsRepository, invRepo repositories.InventoryRepository) PurchaseService {
+	return &purchaseService{userRepo: userRepo, itemsRepo: itemsRepo, invRepo: invRepo}
+}
+
+func (s *purchaseService) PurchaseItem(userID uint, itemName string) (int, error) {
 	item, err := s.itemsRepo.GetItemByName(itemName)
 	if err != nil {
 		return 0, errors.New("item not found")

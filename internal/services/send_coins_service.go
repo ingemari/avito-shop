@@ -6,19 +6,23 @@ import (
 	"errors"
 )
 
-type TransactionService struct {
-	userRepo        *repositories.UserRepository
-	transactionRepo *repositories.TransactionRepository
+type TransactionService interface {
+	TransferCoins(fromUserID uint, toUsername string, amount int) error
 }
 
-func NewTransactionService(userRepo *repositories.UserRepository, transactionRepo *repositories.TransactionRepository) *TransactionService {
-	return &TransactionService{
+type transactionService struct {
+	userRepo        repositories.UserRepository
+	transactionRepo repositories.TransactionRepository
+}
+
+func NewTransactionService(userRepo repositories.UserRepository, transactionRepo repositories.TransactionRepository) TransactionService {
+	return &transactionService{
 		userRepo:        userRepo,
 		transactionRepo: transactionRepo,
 	}
 }
 
-func (s *TransactionService) TransferCoins(fromUserID uint, toUsername string, amount int) error {
+func (s *transactionService) TransferCoins(fromUserID uint, toUsername string, amount int) error {
 	fromUser, err := s.userRepo.GetUserByID(fromUserID)
 	if err != nil {
 		return errors.New("sender not found")

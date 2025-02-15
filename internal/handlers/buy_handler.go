@@ -8,10 +8,10 @@ import (
 )
 
 type PurchaseHandler struct {
-	service *services.PurchaseService
+	service services.PurchaseService
 }
 
-func NewPurchaseHandler(service *services.PurchaseService) *PurchaseHandler {
+func NewPurchaseHandler(service services.PurchaseService) *PurchaseHandler {
 	return &PurchaseHandler{service: service}
 }
 

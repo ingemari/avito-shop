@@ -8,12 +8,12 @@ import (
 )
 
 type InfoHandler struct {
-	inventoryRepo   *repositories.InventoryRepository
-	transactionRepo *repositories.TransactionRepository
-	balanceService  *repositories.UserRepository
+	inventoryRepo   repositories.InventoryRepository
+	transactionRepo repositories.TransactionRepository
+	balanceService  repositories.UserRepository
 }
 
-func NewInfoHandler(inventoryRepo *repositories.InventoryRepository, transactionRepo *repositories.TransactionRepository, balanceService *repositories.UserRepository) *InfoHandler {
+func NewInfoHandler(inventoryRepo repositories.InventoryRepository, transactionRepo repositories.TransactionRepository, balanceService repositories.UserRepository) *InfoHandler {
 	return &InfoHandler{
 		inventoryRepo:   inventoryRepo,
 		transactionRepo: transactionRepo,

@@ -8,21 +8,28 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type AuthService struct {
-	userRepo *repositories.UserRepository
+type AuthService interface {
+	Login(username, password string) (*models.User, error)
 }
 
-func NewAuthService(userRepo *repositories.UserRepository) *AuthService {
-	return &AuthService{userRepo: userRepo}
+type authService struct {
+	userRepo repositories.UserRepository
 }
 
-func (s *AuthService) Login(username, password string) (*models.User, error) {
+func NewAuthService(userRepo repositories.UserRepository) AuthService {
+	return &authService{userRepo: userRepo}
+}
+
+func (s *authService) Login(username, password string) (*models.User, error) {
+	if username == "" || password == "" {
+		return nil, errors.New("empty user or pass")
+	}
 	user, err := s.userRepo.GetUserByUsername(username)
 	if err != nil {
-		hashedPassword := HashPassword(password)
+		hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 		newUser := &models.User{
 			Username: username,
-			Password: hashedPassword,
+			Password: string(hashedPassword),
 			Balance:  1000,
 		}
 		if err := s.userRepo.CreateUser(newUser); err != nil {
@@ -36,9 +43,4 @@ func (s *AuthService) Login(username, password string) (*models.User, error) {
 	}
 
 	return user, nil
-}
-
-func HashPassword(password string) string {
-	hash, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	return string(hash)
 }

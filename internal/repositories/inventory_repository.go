@@ -6,15 +6,20 @@ import (
 	"gorm.io/gorm"
 )
 
-type InventoryRepository struct {
+type InventoryRepository interface {
+	AddItem(userID uint, itemType string, quantity int) error
+	GetUserInventory(userID uint) ([]models.Inventory, error)
+}
+
+type inventoryRepository struct {
 	db *gorm.DB
 }
 
-func NewInventoryRepository(db *gorm.DB) *InventoryRepository {
-	return &InventoryRepository{db: db}
+func NewInventoryRepository(db *gorm.DB) InventoryRepository {
+	return &inventoryRepository{db: db}
 }
 
-func (r *InventoryRepository) AddItem(userID uint, itemType string, quantity int) error {
+func (r *inventoryRepository) AddItem(userID uint, itemType string, quantity int) error {
 	var inventory models.Inventory
 
 	if err := r.db.Where("user_id = ? AND item_type = ?", userID, itemType).First(&inventory).Error; err != nil {
@@ -30,7 +35,7 @@ func (r *InventoryRepository) AddItem(userID uint, itemType string, quantity int
 	return r.db.Save(&inventory).Error
 }
 
-func (r *InventoryRepository) GetUserInventory(userID uint) ([]models.Inventory, error) {
+func (r *inventoryRepository) GetUserInventory(userID uint) ([]models.Inventory, error) {
 	var inventory []models.Inventory
 	err := r.db.Where("user_id = ?", userID).Find(&inventory).Error
 	return inventory, err

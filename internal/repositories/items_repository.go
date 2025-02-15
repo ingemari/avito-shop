@@ -6,15 +6,19 @@ import (
 	"gorm.io/gorm"
 )
 
-type ItemsRepository struct {
+type ItemsRepository interface {
+	GetItemByName(name string) (*models.Item, error)
+}
+
+type itemsRepository struct {
 	db *gorm.DB
 }
 
-func NewItemsRepository(db *gorm.DB) *ItemsRepository {
-	return &ItemsRepository{db: db}
+func NewItemsRepository(db *gorm.DB) ItemsRepository {
+	return &itemsRepository{db: db}
 }
 
-func (r *ItemsRepository) GetItemByName(name string) (*models.Item, error) {
+func (r *itemsRepository) GetItemByName(name string) (*models.Item, error) {
 	var item models.Item
 	if err := r.db.Where("name = ?", name).First(&item).Error; err != nil {
 		return nil, err
