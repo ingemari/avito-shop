@@ -22,6 +22,7 @@ avito-shop/
 │       ├── down/           # Файлы миграций для удаления таблиц
 ├── docker-compose.yml      # Docker Compose для сервисов и базы данных
 ├── Dockerfile              # Dockerfile для сборки образа
+├── Makefile                # Makefile для автоматизации
 ├── go.mod                  # Зависимости Go-модуля
 └── go.sum                  # Контрольные суммы зависимостей
 ```
