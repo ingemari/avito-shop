@@ -11,7 +11,7 @@ services:
         - DATABASE_PORT=5432
         - DATABASE_USER=postgres
         - DATABASE_PASSWORD=password
-        - DATABASE_NAME=avito
+        - DATABASE_NAME=shop
         - DATABASE_HOST=db
         # порт сервиса
         - SERVER_PORT=8080
@@ -29,8 +29,7 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: shop
     volumes:
-      # "./migrations/init.sql" - путь к миграциям БД
-      - ./migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./migrations/up:/docker-entrypoint-initdb.d
     ports:
       - "5432:5432"
     healthcheck:

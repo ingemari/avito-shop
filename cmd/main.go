@@ -1,6 +1,7 @@
 package main
 
 import (
+	"avito-shop/internal/db"
 	"avito-shop/internal/handlers"
 	"avito-shop/internal/middleware"
 	"avito-shop/internal/repositories"
@@ -8,22 +9,16 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 )
 
 func main() {
-	dsn := "host=localhost user=postgres password=secret dbname=avito port=5432 sslmode=disable"
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	if err != nil {
-		log.Fatal("Failed to connect to database")
-	}
+	db := db.NewDB()
 
 	// Initialize repositories
-	userRepo := repositories.NewUserRepository(db)
-	transactionRepo := repositories.NewTransactionRepository(db)
-	itemsRepo := repositories.NewItemsRepository(db)
-	inventoryRepo := repositories.NewInventoryRepository(db)
+	userRepo := repositories.NewUserRepository(db.DB)
+	transactionRepo := repositories.NewTransactionRepository(db.DB)
+	itemsRepo := repositories.NewItemsRepository(db.DB)
+	inventoryRepo := repositories.NewInventoryRepository(db.DB)
 
 	// Initialize services
 	authService := services.NewAuthService(userRepo)

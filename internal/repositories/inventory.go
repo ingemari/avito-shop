@@ -24,7 +24,6 @@ func (r *inventoryRepository) AddItem(userID uint, itemType string, quantity int
 
 	if err := r.db.Where("user_id = ? AND item_type = ?", userID, itemType).First(&inventory).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			// newItem
 			newItem := models.Inventory{UserID: userID, ItemType: itemType, Quantity: quantity}
 			return r.db.Create(&newItem).Error
 		}

@@ -12,12 +12,10 @@ import (
 )
 
 func TestAuthService_Login_Success(t *testing.T) {
-	// Создаём мок
 	mockRepo := new(mocks.MockUserRepository)
 	authService := services.NewAuthService(mockRepo)
 
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("hashedpassword"), bcrypt.DefaultCost)
-	// Ожидаемый пользователь
 	expectedUser := &models.User{
 		ID:       1,
 		Username: "testuser",
@@ -25,40 +23,40 @@ func TestAuthService_Login_Success(t *testing.T) {
 		Balance:  1000,
 	}
 
-	// Настройка мока
 	mockRepo.On("GetUserByUsername", "testuser").Return(expectedUser, nil)
 
-	// Вызов метода
 	user, err := authService.Login("testuser", "hashedpassword")
 
-	// Проверки
 	assert.NoError(t, err)
 	assert.Equal(t, expectedUser, user)
 	mockRepo.AssertExpectations(t)
 }
 
-func TestAuthService_Login(t *testing.T) {
-	// Создаём мок
+func TestAuthService_Login_EmptyPass(t *testing.T) {
+	authService := services.NewAuthService(nil)
+	_, err := authService.Login("", "")
+
+	assert.Error(t, err)
+	assert.Equal(t, "empty user or pass", err.Error())
+}
+
+func TestAuthService_Login_IncorrectPass(t *testing.T) {
 	mockRepo := new(mocks.MockUserRepository)
 	authService := services.NewAuthService(mockRepo)
 
-	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("hashedpassword"), bcrypt.DefaultCost)
-	// Ожидаемый пользователь
-	expectedUser := &models.User{
-		ID:       1,
+	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("correctpassword"), bcrypt.DefaultCost)
+	user := &models.User{
 		Username: "testuser",
 		Password: string(hashedPassword),
 		Balance:  1000,
 	}
 
-	// Настройка мока
-	mockRepo.On("GetUserByUsername", "testuser").Return(expectedUser, nil)
+	mockRepo.On("GetUserByUsername", "testuser").Return(user, nil)
 
-	// Вызов метода
-	user, err := authService.Login("testuser", "hashedpassword")
+	_, err := authService.Login("testuser", "123")
 
-	// Проверки
-	assert.NoError(t, err)
-	assert.Equal(t, expectedUser, user)
+	assert.Error(t, err)
+	assert.Equal(t, "invalid credentials", err.Error())
+
 	mockRepo.AssertExpectations(t)
 }
